@@ -8,6 +8,8 @@ A tessituragram is a duration-weighted pitch distribution: it shows how much tim
 - rank songs for one singer or a small ensemble (CLI or **web UI**),
 - generate Jupyter notebooks to inspect tessituragrams and recommendation vectors.
 
+**Spec-driven process** (constitution → user stories → plan → tasks → implement → manual tests): see [`docs/README.md`](docs/README.md) and start with [`docs/spec/constitution.md`](docs/spec/constitution.md).
+
 ---
 
 ## Web app (easiest way to try recommendations)
@@ -30,6 +32,8 @@ python app.py
 ```
 
 Then use **[http://127.0.0.1:5000/](http://127.0.0.1:5000/)** — the terminal also prints this URL when the server starts.
+
+**Hands-on verification (after code changes):** [Manual test checklist](docs/testing/manual-test.md)
 
 Optional environment variables:
 
@@ -55,6 +59,7 @@ Optional environment variables:
 | [`data/`](data/) | Tessituragram JSON libraries (e.g. `all_tessituragrams.json`, `tessituragrams.json`) and generated outputs |
 | [`songs/`](songs/) | Put input `.mxl` files under `songs/mxl_songs/` for the CLI pipeline |
 | [`how_tos/`](how_tos/) | Step-by-step text guides |
+| [`docs/`](docs/) | Spec-driven docs: [`docs/README.md`](docs/README.md) — [`docs/spec/constitution.md`](docs/spec/constitution.md), stories, plan, [`docs/tasks.md`](docs/tasks.md), [`docs/testing/manual-test.md`](docs/testing/manual-test.md) |
 | [`requirements.txt`](requirements.txt) | Python dependencies (includes Flask for the web app) |
 
 ---
