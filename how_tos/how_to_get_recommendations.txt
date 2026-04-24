@@ -1,0 +1,87 @@
+HOW TO GET RECOMMENDATIONS
+==========================
+
+Goal
+----
+Generate ranked song recommendations based on one or more singers' vocal profiles.
+
+This workflow uses:
+- src/run_recommendations.py
+- input file: data/all_tessituragrams.json
+- output file: data/recommendations.json
+
+
+Step 1: Open a terminal in the project folder
+----------------------------------------------
+Make sure you are inside:
+research_seminar
+
+
+Step 2: Activate your Python environment
+----------------------------------------
+Windows PowerShell:
+
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+
+If your copy has requirements.txt:
+pip install -r requirements.txt
+
+If requirements.txt is missing:
+pip install music21 numpy scipy nbformat matplotlib jupyter
+
+
+Step 3: Confirm the recommendation library exists
+-------------------------------------------------
+This script reads:
+
+data/all_tessituragrams.json
+
+In this repo snapshot, the file is already present.
+
+
+Step 4: Run the recommendation workflow
+---------------------------------------
+Run:
+
+python -m src.run_recommendations
+
+You will be prompted for:
+- ensemble type (solo/duet/trio/etc. based on the data file)
+- each singer's lowest and highest note
+- optional favorite notes
+- optional notes to avoid
+
+Note format examples:
+- C4
+- F#4
+- Bb3
+- D4-E4 (range)
+
+
+Step 5: Read and save results
+-----------------------------
+The script prints a ranked list in the terminal and writes:
+
+data/recommendations.json
+
+This file includes:
+- your profile inputs
+- ranking scores
+- part assignments (for multi-singer recommendations)
+
+
+If something goes wrong
+-----------------------
+1) "Error: Library not found at data/all_tessituragrams.json"
+   - Put the file in data/ or update the path in src/run_recommendations.py.
+
+2) "Invalid note"
+   - Use note+octave format (examples: C4, Eb5, Bb3).
+
+3) "No songs match your range"
+   - Widen the singer range and try again.
+
+4) "No songs have a valid assignment for all voice profiles"
+   - For ensemble recommendations, widen one or more singer ranges.

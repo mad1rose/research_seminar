@@ -1,0 +1,87 @@
+HOW TO CREATE TESSITURAGRAMS
+============================
+
+Goal
+----
+Build tessituragrams from your own MusicXML song files and save them to JSON.
+
+This workflow uses:
+- src/main.py
+- output file: data/tessituragrams.json
+
+
+Step 1: Open a terminal in the project folder
+----------------------------------------------
+In Cursor terminal, make sure you are inside:
+research_seminar
+
+
+Step 2: (Recommended) activate your Python environment
+------------------------------------------------------
+Windows PowerShell:
+
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+
+If your copy has requirements.txt:
+pip install -r requirements.txt
+
+If requirements.txt is missing:
+pip install music21 numpy scipy nbformat matplotlib jupyter
+
+
+Step 3: Create the input folder and add .mxl files
+---------------------------------------------------
+This repo snapshot does not include songs/ yet, so create it:
+
+mkdir songs\mxl_songs
+
+Then copy your .mxl files into songs\mxl_songs.
+
+
+Step 4: Run the tessituragram builder
+-------------------------------------
+Run:
+
+python -m src.main
+
+Expected terminal output:
+- "Found X .mxl file(s)"
+- "Processing: <filename>.mxl"
+- "Saving ... to data/tessituragrams.json"
+- "Done!"
+
+
+Step 5: Confirm where results are saved
+---------------------------------------
+The generated library is saved to:
+
+data/tessituragrams.json
+
+The file contains:
+- song metadata (composer/title/filename)
+- tessituragram pitch-duration data
+- pitch range statistics
+
+
+Optional: process only one file
+-------------------------------
+If you want to process a single MusicXML file:
+
+python -m src.main --file songs/mxl_songs/your_song.mxl
+
+
+If something goes wrong
+-----------------------
+1) "Error: Directory not found: songs/mxl_songs"
+   - Create it with: mkdir songs\mxl_songs
+
+2) "Error: No .mxl files found in songs/mxl_songs"
+   - Make sure files are in that folder and have the .mxl extension.
+
+3) "No module named ..."
+   - Activate your virtual environment and reinstall required packages.
+
+4) "Error processing <file>"
+   - The MusicXML file may be malformed; test another .mxl file first.

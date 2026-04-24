@@ -1,0 +1,93 @@
+HOW TO VIEW TESSITURAGRAMS AND RECOMMENDATION CHARTS
+=====================================================
+
+Goal
+----
+Create Jupyter notebooks to visualize:
+1) tessituragrams from the song library
+2) recommendation results compared to singer profile vectors
+
+This workflow uses:
+- src/visualize.py
+- src/visualize_recommendations.py
+
+
+Step 1: Open a terminal in the project folder
+----------------------------------------------
+Make sure you are inside:
+research_seminar
+
+
+Step 2: Activate environment and install plotting tools
+-------------------------------------------------------
+Windows PowerShell:
+
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+
+If your copy has requirements.txt:
+pip install -r requirements.txt
+
+If requirements.txt is missing:
+pip install music21 numpy scipy nbformat matplotlib jupyter
+
+
+Step 3: Generate tessituragram notebook
+---------------------------------------
+Run:
+
+python -m src.visualize
+
+Expected output:
+- notebook file created: tessituragrams.ipynb
+- message with chart count and song count
+
+Data source used by default:
+- data/all_tessituragrams.json
+
+
+Step 4: Generate recommendation notebook
+----------------------------------------
+First, make sure recommendations exist (from src.run_recommendations):
+- data/recommendations.json
+
+Then run:
+
+python -m src.visualize_recommendations
+
+Expected output:
+- notebook file created: recommendations.ipynb
+
+
+Step 5: Open and view notebooks
+-------------------------------
+Open in Cursor/VS Code directly, or run:
+
+jupyter notebook tessituragrams.ipynb
+jupyter notebook recommendations.ipynb
+
+Inside each notebook:
+- use Cell -> Run All
+- scroll through generated charts
+
+
+Where files are saved
+---------------------
+- tessituragrams.ipynb -> project root (research_seminar/)
+- recommendations.ipynb -> project root (research_seminar/)
+
+
+If something goes wrong
+-----------------------
+1) "Error: data/all_tessituragrams.json not found"
+   - Ensure the file exists in data/ before running src.visualize.
+
+2) "Error: data/recommendations.json not found"
+   - Run: python -m src.run_recommendations
+
+3) Notebook opens but no charts appear
+   - Run all cells and confirm matplotlib is installed.
+
+4) "No module named nbformat" (or similar)
+   - Reinstall dependencies in the active environment.
