@@ -1,27 +1,21 @@
 # Tessituragram Repertoire Recommender
 
-This project helps singers and teachers compare vocal music to singer ranges using **tessituragrams**.
+This repository builds and compares tessituragrams for vocal repertoire.
 
-A tessituragram is a pitch-distribution chart: it shows how much time a song (or a voice part in a multi-part song) spends on each pitch.  
-This system can:
+A tessituragram is a duration-weighted pitch distribution for a song (or a voice part in a multi-part song). The project supports:
 
-- build tessituragrams from `.mxl` MusicXML files,
-- rank songs against one singer or multiple singers,
-- generate Jupyter notebooks so you can visually inspect tessituragrams and recommendations.
+- extracting tessituragrams from MusicXML (`.mxl`) files,
+- ranking songs for solo singers or small ensembles,
+- generating notebooks and figures for analysis and research experiments.
 
-## What's in this repository
+## Repository layout
 
-Current structure in this repo:
-
-- `src/` - Python source code
-- `data/all_tessituragrams.json` - multi-part tessituragram library (used by recommendations)
-- `data/tessituragrams.json` - single-part tessituragram library format
-- `README.md` - this guide
-
-Notes:
-
-- `requirements.txt` is not currently present in this snapshot.
-- `songs/` is not currently present in this snapshot; create it when you want to process your own `.mxl` files.
+- `src/` - core parsing, tessituragram generation, recommendation, and notebook export code.
+- `experiment/` - RQ1/RQ2/RQ3 experiment runners and plotting scripts.
+- `data/` - tessituragram libraries and recommendation output JSON files.
+- `experiment_results/` - generated experiment output JSON files.
+- `songs/` - input folder for `.mxl` files (used by `src.main`).
+- `how_tos/` - step-by-step usage guides.
 
 ## Installation
 
@@ -31,97 +25,75 @@ From the `research_seminar` folder:
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-```
-
-If `requirements.txt` exists in your copy, install with:
-
-```powershell
 pip install -r requirements.txt
 ```
 
-In this current snapshot (no `requirements.txt`), install directly:
+## Quick start (core pipeline)
+
+### 1) Build tessituragrams from `.mxl` files
+
+Put your files in `songs/mxl_songs`, then run:
 
 ```powershell
-pip install music21 numpy scipy nbformat matplotlib jupyter
-```
-
-## Quick start
-
-### 1) Create tessituragrams from song files
-
-If you have your own `.mxl` files:
-
-```powershell
-mkdir songs\mxl_songs
-# copy your .mxl files into songs\mxl_songs
 python -m src.main
 ```
 
-Expected output:
+Output is saved to `data/tessituragrams.json`.
 
-- console messages like `Processing: ...` and `Done!`
-- JSON saved to `data/tessituragrams.json`
+### 2) Generate recommendations
 
-### 2) Run recommendations
-
-The recommender reads `data/all_tessituragrams.json` and saves ranked results:
+Run the interactive recommender:
 
 ```powershell
 python -m src.run_recommendations
 ```
 
-Expected output:
+This reads `data/all_tessituragrams.json` and writes `data/recommendations.json`.
 
-- interactive prompts for range, favorite notes, and avoid notes
-- ranked recommendations printed in terminal
-- saved file: `data/recommendations.json`
-
-### 3) View tessituragrams and recommendation plots
-
-Generate notebook for tessituragram library:
+### 3) Generate visualization notebooks
 
 ```powershell
 python -m src.visualize
-```
-
-Generate notebook for recommendation results:
-
-```powershell
 python -m src.visualize_recommendations
 ```
 
-Then open the generated notebooks in Cursor/VS Code or with Jupyter:
+These generate `tessituragrams.ipynb` and `recommendations.ipynb` in the repository root.
+
+## Experiments
+
+The `experiment/` scripts reproduce evaluation workflows and figures for RQ1, RQ2, RQ3, baselines, and alpha sensitivity.
+
+Common examples:
 
 ```powershell
-jupyter notebook tessituragrams.ipynb
-jupyter notebook recommendations.ipynb
+python -m experiment.run_rq1_experiment
+python -m experiment.run_rq2_experiment
+python -m experiment.run_rq3_experiment
+python -m experiment.visualize_rq1
+python -m experiment.visualize_rq2
+python -m experiment.visualize_rq3
 ```
 
-## What each `src` module does
+Generated JSON outputs are stored in `experiment_results/`.
 
-- `src/main.py` - CLI to process `.mxl` files and save tessituragrams to JSON.
-- `src/parser.py` - extracts vocal notes/rests from MusicXML scores.
-- `src/tessituragram.py` - converts notes into duration-weighted MIDI pitch distributions and statistics.
-- `src/metadata.py` - gets composer/title metadata from MusicXML or filename parsing.
-- `src/storage.py` - JSON load/save helpers for tessituragrams and recommendation outputs.
-- `src/recommend.py` - scoring engine (range checks, vectors, cosine similarity, multi-part assignment).
-- `src/run_recommendations.py` - interactive recommendation workflow for solo and ensemble settings.
-- `src/visualize.py` - builds `tessituragrams.ipynb` with pitch histograms.
-- `src/visualize_recommendations.py` - builds `recommendations.ipynb` comparing song vectors with ideal profiles.
-- `src/__init__.py` - package marker for `src` module imports.
+## Main modules in `src/`
+
+- `src.main` - CLI entry point to process `.mxl` files and save tessituragrams.
+- `src.parser` - extracts vocal content from MusicXML scores.
+- `src.tessituragram` - builds duration-weighted pitch distributions and summary statistics.
+- `src.metadata` - extracts title/composer metadata from score/file information.
+- `src.storage` - read/write helpers for tessituragram and recommendation JSON files.
+- `src.recommend` - recommendation scoring for solo and multi-singer matching.
+- `src.run_recommendations` - interactive recommendation workflow.
+- `src.visualize` - notebook generator for tessituragram plots.
+- `src.visualize_recommendations` - notebook generator for recommendation plots.
 
 ## Troubleshooting
 
-- **`No module named ...`**
-  - Activate your virtual environment and reinstall dependencies.
-- **`Error: data/all_tessituragrams.json not found`**
-  - Put the file in `data/` or adjust `src/run_recommendations.py` paths before running.
-- **`Error: Directory not found: songs/mxl_songs`**
-  - Create `songs\mxl_songs` and add `.mxl` files, then run `python -m src.main`.
-- **`No .mxl files found`**
-  - Check that files end with `.mxl` and are inside `songs\mxl_songs`.
-- **Notebook opens but charts do not render**
-  - Run all cells (`Cell -> Run All`) and ensure `matplotlib` + Jupyter are installed.
+- **`No module named ...`**: activate the virtual environment and reinstall with `pip install -r requirements.txt`.
+- **`Directory not found: songs/mxl_songs`**: create `songs/mxl_songs` and add `.mxl` files.
+- **`data/all_tessituragrams.json not found`**: place the dataset in `data/` before running recommendations.
+- **Notebook/plot issues**: regenerate notebooks and run all cells in your notebook environment.
 
 ## More detailed guides
 
