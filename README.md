@@ -1,108 +1,96 @@
 # Tessituragram Repertoire Recommender
 
-This project helps singers and teachers compare vocal music to singer ranges using **tessituragrams**.
+This project helps singers and teachers compare songs to vocal ranges using **tessituragrams**.
 
-A tessituragram is a duration-weighted pitch distribution: it shows how much time a song (or a voice part in a multi-part piece) spends on each pitch. You can:
+A tessituragram is a pitch histogram weighted by note duration (how long the song spends on each pitch).
 
+You can use this repo to:
+
+- run a web app that recommends repertoire,
 - build tessituragrams from `.mxl` MusicXML files,
-- rank songs for one singer or a small ensemble (CLI or **web UI**),
-- generate Jupyter notebooks to inspect tessituragrams and recommendation vectors.
-
-**Spec-driven process** (constitution → user stories → plan → tasks → implement → manual tests): see [`docs/README.md`](docs/README.md) and start with [`docs/spec/constitution.md`](docs/spec/constitution.md).
+- run recommendations in the terminal,
+- generate notebooks for visualization.
 
 ---
 
-## Web app (easiest way to try recommendations)
+## Start here (for beginners)
 
-**After you start the server** (see [Run the web app](#run-the-web-app) below), open the UI in your browser:
+If you only want to use the web app, follow **one** option below.
 
-**[http://127.0.0.1:5000/](http://127.0.0.1:5000/)**
+The app opens at: **[http://127.0.0.1:5000/](http://127.0.0.1:5000/)**
 
-That link uses the default host and port from [`app.py`](app.py) (`127.0.0.1`, port `5000`). If you set `PORT` or `FLASK_HOST` when launching, use `http://<host>:<port>/` instead.
+Important: the app needs the file `data/all_tessituragrams.json`.
 
-The web app expects **`data/all_tessituragrams.json`** for the song library (same path as in `app.py`).
+### Option A (recommended): Docker Desktop
 
-### Run the web app
+1. Install and open [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+2. Open this folder (`research_seminar`) in File Explorer.
+3. Open PowerShell in this folder.
+4. Run:
 
-From the **`research_seminar`** project root (so `data/` paths resolve correctly):
+```powershell
+docker compose up --build
+```
+
+5. Open [http://127.0.0.1:5000/](http://127.0.0.1:5000/) in your browser.
+6. To stop the app, press `Ctrl + C` in that PowerShell window.
+
+### Option B: No Docker (Python)
+
+1. Install Python 3.13.
+2. Open PowerShell in this folder (`research_seminar`).
+3. Run:
 
 ```powershell
 python -m pip install -r requirements.txt
 python app.py
 ```
 
-Then use **[http://127.0.0.1:5000/](http://127.0.0.1:5000/)** — the terminal also prints this URL when the server starts.
+4. Open [http://127.0.0.1:5000/](http://127.0.0.1:5000/) in your browser.
+5. To stop the app, press `Ctrl + C`.
 
-**Hands-on verification (after code changes):** [Manual test checklist](docs/testing/manual-test.md)
+If you see “Song library not available”, check that `data/all_tessituragrams.json` exists. See [docs/DATA.md](docs/DATA.md).
 
-**Data layout and reproducibility:** [docs/DATA.md](docs/DATA.md)
+---
 
-**Run automated tests (recommended before submitting changes):**
+## Web app details (advanced)
 
-```powershell
-python -m pip install -r requirements.txt
-python -m pytest
-```
-
-**Python version:** 3.13.x is the project standard; use the same in your write-up. Check with `python --version`. The pinned NumPy/SciPy/Matplotlib versions in [`requirements.txt`](requirements.txt) use **cp313 wheels** (needed for Linux/Docker `slim` images without a compiler).
+- Default host/port: `127.0.0.1:5000`
+- Main entry file: [`app.py`](app.py)
+- Templates: [`templates/`](templates/)
+- Frontend assets: [`static/`](static/)
 
 Optional environment variables:
 
-- `PORT` — listen port (default `5000`)
-- `FLASK_HOST` — bind address (default `127.0.0.1`; use `0.0.0.0` only if you need access from other devices on your network)
-- `FLASK_DEBUG` — if `0`, `false`, or `no`, runs without Flask debug mode (handy to approximate production; default is debug **on** for local work)
-- `SECRET_KEY` — set to a long random string for any shared, classroom, or public network; if unset, a **development** default is used and a warning is logged
-- `TESSITURAGRAM_LIBRARY_PATH` — optional path to `all_tessituragrams.json` if the file is not in `data/all_tessituragrams.json` (must still be a valid project-relative or absolute path the process can read)
+- `PORT` (default `5000`)
+- `FLASK_HOST` (default `127.0.0.1`)
+- `FLASK_DEBUG` (`1/true/yes` = debug on, `0/false/no` = debug off)
+- `SECRET_KEY` (set this for shared/public use)
+- `TESSITURAGRAM_LIBRARY_PATH` (optional path override for the library JSON)
 
-### Run with Docker
+### Docker commands (advanced)
 
-Prerequisites: [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine) running.
-
-The image sets `FLASK_HOST=0.0.0.0` so the app is reachable from your host. **`data/` is not baked into the image** (see [`.dockerignore`](.dockerignore)); mount your local `data` directory so `data/all_tessituragrams.json` exists inside the container.
-
-**PowerShell** (from the project root):
-
-```powershell
-docker build -t tessituragram-app .
-docker run --rm -p 5000:5000 `
-  -e SECRET_KEY=change-me-to-a-long-random-string `
-  -v "${PWD}/data:/app/data" `
-  tessituragram-app
-```
-
-**Bash** (Git Bash, WSL, macOS, Linux):
-
-```bash
-docker build -t tessituragram-app .
-docker run --rm -p 5000:5000 \
-  -e SECRET_KEY=change-me-to-a-long-random-string \
-  -v "${PWD}/data:/app/data" \
-  tessituragram-app
-```
-
-Open **[http://127.0.0.1:5000/](http://127.0.0.1:5000/)**. If the library file is missing, you get a **503** with the “library unavailable” page (same as native runs).
-
-Environment template: copy [`.env.example`](.env.example) to `.env` and adjust (never commit real secrets). For **Compose** (dev) and **production-style** (`prod` target + Gunicorn), see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) § Containerization and [docs/spec/plan.md](docs/spec/plan.md) § Epic F.
-
-**Docker Compose (dev server)** — from the project root, with `./data` present (optional: copy [`.env.example`](.env.example) to `.env` and set `SECRET_KEY`):
+Dev server with Compose:
 
 ```powershell
 docker compose up --build
 ```
 
-**Production-style stack (Gunicorn)** — separate Compose service on profile `prod` (same default host port `5000`; do not run `web` and `web-prod` at once on the same port):
+Production-style Compose service (Gunicorn):
 
 ```powershell
 docker compose --profile prod up --build
 ```
 
-**Build only the Gunicorn image:**
+Build production image only:
 
 ```powershell
 docker build --target prod -t tessituragram-app:prod .
 ```
 
-### Web app layout
+---
+
+## Web app layout
 
 | Path | Role |
 |------|------|
@@ -132,7 +120,7 @@ docker build --target prod -t tessituragram-app:prod .
 
 ---
 
-## Installation (CLI + notebooks + web)
+## Installation (for development)
 
 From the project root:
 
@@ -145,7 +133,7 @@ pip install -r requirements.txt
 
 ---
 
-## Quick start (CLI pipeline)
+## CLI workflow
 
 ### 1) Build tessituragrams from `.mxl` files
 
@@ -192,18 +180,31 @@ Generates **`tessituragrams.ipynb`** and **`recommendations.ipynb`** in the proj
 
 ---
 
-## Troubleshooting
+## Testing
 
-- **`No module named ...`** — Activate the venv and run `pip install -r requirements.txt` again.
-- **`data/all_tessituragrams.json` not found** — Add that file under `data/` (or set `TESSITURAGRAM_LIBRARY_PATH` to a readable file). The app shows a **“Song library not available”** page with a short fix list instead of a raw 500. See [docs/DATA.md](docs/DATA.md).
-- **`Directory not found: songs/mxl_songs`** — Create `songs/mxl_songs` and add `.mxl` files before `python -m src.main`.
-- **Web UI styling or piano broken** — Ensure `static/` is present and you run `python app.py` from the project root.
-- **Notebook charts** — Run all cells; ensure `matplotlib` / Jupyter are available (see `requirements.txt`).
+```powershell
+python -m pytest
+```
+
+Manual test checklist: [docs/testing/manual-test.md](docs/testing/manual-test.md)
 
 ---
 
-## More detailed guides
+## Troubleshooting
 
+- **`No module named ...`**: run `python -m pip install -r requirements.txt` again.
+- **Song library missing**: add `data/all_tessituragrams.json` or set `TESSITURAGRAM_LIBRARY_PATH`. See [docs/DATA.md](docs/DATA.md).
+- **`Directory not found: songs/mxl_songs`**: create `songs/mxl_songs` and add `.mxl` files before running `python -m src.main`.
+- **Web page has no styling or piano keys do not work**: confirm `static/` exists and run from the repo root.
+
+---
+
+## Documentation and guides
+
+- Spec workflow: [docs/README.md](docs/README.md)
+- Constitution (project laws): [docs/spec/constitution.md](docs/spec/constitution.md)
+- Architecture walkthrough: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- Data layout: [docs/DATA.md](docs/DATA.md)
 - [`how_tos/how_to_create_tessituragrams.txt`](how_tos/how_to_create_tessituragrams.txt)
 - [`how_tos/how_to_get_recommendations.txt`](how_tos/how_to_get_recommendations.txt)
 - [`how_tos/how_to_view_tessituragrams.txt`](how_tos/how_to_view_tessituragrams.txt)
