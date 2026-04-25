@@ -35,10 +35,24 @@ Then use **[http://127.0.0.1:5000/](http://127.0.0.1:5000/)** — the terminal a
 
 **Hands-on verification (after code changes):** [Manual test checklist](docs/testing/manual-test.md)
 
+**Data layout and reproducibility:** [docs/DATA.md](docs/DATA.md)
+
+**Run automated tests (recommended before submitting changes):**
+
+```powershell
+python -m pip install -r requirements.txt
+python -m pytest
+```
+
+**Python version:** 3.13.x is the project standard; use the same in your write-up. Check with `python --version`.
+
 Optional environment variables:
 
 - `PORT` — listen port (default `5000`)
 - `FLASK_HOST` — bind address (default `127.0.0.1`; use `0.0.0.0` only if you need access from other devices on your network)
+- `FLASK_DEBUG` — if `0`, `false`, or `no`, runs without Flask debug mode (handy to approximate production; default is debug **on** for local work)
+- `SECRET_KEY` — set to a long random string for any shared, classroom, or public network; if unset, a **development** default is used and a warning is logged
+- `TESSITURAGRAM_LIBRARY_PATH` — optional path to `all_tessituragrams.json` if the file is not in `data/all_tessituragrams.json` (must still be a valid project-relative or absolute path the process can read)
 
 ### Web app layout
 
@@ -59,7 +73,8 @@ Optional environment variables:
 | [`data/`](data/) | Tessituragram JSON libraries (e.g. `all_tessituragrams.json`, `tessituragrams.json`) and generated outputs |
 | [`songs/`](songs/) | Put input `.mxl` files under `songs/mxl_songs/` for the CLI pipeline |
 | [`how_tos/`](how_tos/) | Step-by-step text guides |
-| [`docs/`](docs/) | Spec-driven docs: [`docs/README.md`](docs/README.md) — [`docs/spec/constitution.md`](docs/spec/constitution.md), stories, plan, [`docs/tasks.md`](docs/tasks.md), [`docs/testing/manual-test.md`](docs/testing/manual-test.md) |
+| [`docs/`](docs/) | Spec: [`docs/README.md`](docs/README.md), [`docs/spec/constitution.md`](docs/spec/constitution.md), data notes [`docs/DATA.md`](docs/DATA.md) |
+| [`tests/`](tests/) | `pytest` suite (`python -m pytest`) |
 | [`requirements.txt`](requirements.txt) | Python dependencies (includes Flask for the web app) |
 
 ---
@@ -127,7 +142,7 @@ Generates **`tessituragrams.ipynb`** and **`recommendations.ipynb`** in the proj
 ## Troubleshooting
 
 - **`No module named ...`** — Activate the venv and run `pip install -r requirements.txt` again.
-- **`data/all_tessituragrams.json` not found** — Add that file under `data/` for the web app and CLI multi-library flows.
+- **`data/all_tessituragrams.json` not found** — Add that file under `data/` (or set `TESSITURAGRAM_LIBRARY_PATH` to a readable file). The app shows a **“Song library not available”** page with a short fix list instead of a raw 500. See [docs/DATA.md](docs/DATA.md).
 - **`Directory not found: songs/mxl_songs`** — Create `songs/mxl_songs` and add `.mxl` files before `python -m src.main`.
 - **Web UI styling or piano broken** — Ensure `static/` is present and you run `python app.py` from the project root.
 - **Notebook charts** — Run all cells; ensure `matplotlib` / Jupyter are available (see `requirements.txt`).

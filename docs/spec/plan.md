@@ -47,6 +47,7 @@
 | **Inputs** | `data/all_tessituragrams.json` (default library path) |
 | **Default output** | `data/recommendations.json` (confirm in `run_recommendations.py` if you change) |
 | **Risks** | Path assumptions; ensemble filtering must match **web** expectations for comparable results |
+| **Alignment with web** | The CLI and the Flask app use the same **`src.recommend`** functions when scoring the same **filtered** songs and the same **vocal profiles** (min/max MIDI, favorites, avoids, alpha). Document any change to filters or data paths. |
 
 ---
 
@@ -72,10 +73,10 @@
 |------|--------|
 | **Entry** | `python app.py` from repo root (or `flask` CLI as documented) |
 | **Key modules** | `app.py`; `templates/*.html`; `static/js/*.js`, `static/css/style.css` |
-| **Data** | `data/all_tessituragrams.json` — `LIBRARY_PATH` in `app.py` |
+| **Data** | `data/all_tessituragrams.json` by default; override with **`TESSITURAGRAM_LIBRARY_PATH`** (see `get_library_path()` in `app.py`) |
 | **Session** | `num_parts`, `ensemble_label`, `singer_names`, `profiles`, `result_id` |
 | **In-memory stores** | `_results_store`, `_charts_store` — **cleared on process restart**; document in README/thesis |
-| **API** | `POST /api/save-profile/<index>` — JSON body; validate with `_parse_profile_payload` |
+| **API** | `POST /api/save-profile/<index>` — JSON body; validate with `parse_profile_payload` in `src/profile_validation.py` |
 | **Risks** | `SECRET_KEY` for non-local deploy; no CSRF on JSON API in v1 (document risk) |
 
 **Request flow (satisfies D1–D5 at a high level)**

@@ -104,6 +104,53 @@ def load_tessituragrams(input_path: Path) -> list[dict]:
     return data.get('songs', [])
 
 
+def load_tessituragrams_with_status(input_path: Path) -> tuple[list[dict] | None, str | None]:
+    """Load library from JSON. Returns ``(songs, None)`` on success, or ``(None, user_message)``.
+
+    Used by the web app to show a clear error on missing, corrupt, or unreadable
+    data instead of a raw 500.
+    """
+    if not input_path.is_file():
+        return None, (
+            f'Song library not found. Expected: {input_path} '
+            '(or set the TESSITURAGRAM_LIBRARY_PATH environment variable).'
+        )
+    try:
+        with open(input_path, 'r', encoding='utf-8') as f:
+            raw = f.read()
+    except OSError as e:
+        return None, f'Could not read the library file: {e}'
+
+    if not raw.strip():
+        return None, 'The library file is empty.'
+
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as e:
+        return None, f'The library file is not valid JSON: {e}.'
+
+    if not isinstance(data, dict):
+        return None, "The library file's top level must be a JSON object (e.g. { \"songs\": [...] })."
+
+    songs = data.get('songs', [])
+    if not isinstance(songs, list):
+        return None, "The 'songs' field must be a list."
+
+    for i, song in enumerate(songs):
+        if not isinstance(song, dict):
+            return None, f"Entry at index {i} in 'songs' must be a JSON object (song)."
+
+    try:
+        for song in songs:
+            get_voice_part_count(song)  # validates per-song shape for ensemble discovery
+    except (TypeError, KeyError, AttributeError):
+        return None, (
+            "The 'songs' data could not be read. See docs/DATA.md for the expected format."
+        )
+
+    return songs, None
+
+
 def load_flat_library(input_path: Path) -> list[dict]:
     """Load songs and flatten every vocal line into one solo-shaped record.
 

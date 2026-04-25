@@ -5,6 +5,10 @@
 <h1 class="page-title">Find the perfect songs for your voice</h1>
 <p class="page-subtitle">Choose the type of piece you're looking for.</p>
 
+{% if not types %}
+<p class="form-hint" style="max-width:40rem;">The song library loaded, but it contains no pieces. Add songs to the library (see <code>docs/DATA.md</code>) and restart the app.</p>
+<p class="form-hint" style="margin-top:0.5rem;">Configured library path: <code style="word-break:break-all;">{{ library_path_display }}</code></p>
+{% else %}
 <div class="grid-2">
   {% for num, info in types.items()|sort %}
   <form method="post" action="{{ url_for('select_ensemble') }}" class="ensemble-form">
@@ -19,4 +23,5 @@
   </form>
   {% endfor %}
 </div>
+{% endif %}
 {% endblock %}

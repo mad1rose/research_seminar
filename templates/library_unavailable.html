@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Library unavailable · Tessituragram Recommender{% endblock %}
+
+
+
+{% block content %}
+
+<h1 class="page-title">Song library not available</h1>
+
+<p class="page-subtitle">The app needs a valid tessituragram library JSON file to list ensemble options and run recommendations.</p>
+
+
+
+<div class="piano-readout" style="margin:1.25rem 0;padding:1rem;max-width:40rem;border-radius:0.5rem;border:1px solid var(--border, #2a2a35);background:var(--surface-2, #1a1a22);">
+
+  <p class="form-hint" style="color:var(--text, #e8e6e3);margin:0 0 0.75rem 0;"><strong>What’s wrong</strong></p>
+
+  <p class="form-hint" style="color:var(--text-dim, #9a96a0);white-space:pre-wrap;margin:0;">{{ error_message }}</p>
+
+  <p class="form-hint" style="color:var(--text-dim, #9a96a0);margin:0.75rem 0 0 0;">
+
+    <strong>Expected path:</strong> <code style="word-break:break-all;">{{ library_path_display }}</code>
+
+  </p>
+
+</div>
+
+
+
+<h2 class="form-label" style="margin-top:1.5rem;">How to fix it</h2>
+
+<ol class="form-hint" style="max-width:40rem;line-height:1.6;padding-left:1.25rem;">
+
+  <li>Place <code>all_tessituragrams.json</code> in the <code>data/</code> folder in your project, or set the environment variable <code>TESSITURAGRAM_LIBRARY_PATH</code> to a full path to the file.</li>
+
+  <li>Confirm the file is valid JSON and contains a <code>&quot;songs&quot;</code> list. See <code>docs/DATA.md</code> in the repository for the expected format.</li>
+
+  <li>Restart the app after adding or moving the file.</li>
+
+</ol>
+
+<p class="form-hint" style="margin-top:1rem;">
+
+  <a href="{{ url_for('index') }}">Try again</a>
+
+  &middot; See <code>README.md</code> in the project root for installation.
+
+</p>
+
+{% endblock %}
+

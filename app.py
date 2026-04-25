@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+import os
 import uuid
 from pathlib import Path
 
@@ -15,6 +17,7 @@ from flask import (
     url_for,
 )
 
+from src.profile_validation import parse_profile_payload
 from src.recommend import (
     build_ideal_vector,
     filter_by_range,
@@ -26,24 +29,34 @@ from src.storage import (
     discover_ensemble_types,
     filter_by_ensemble_type,
     flatten_song_part,
-    load_tessituragrams,
+    load_tessituragrams_with_status,
 )
 
-app = Flask(__name__)
-app.secret_key = 'tessituragram-dev-key-change-in-production'
+logger = logging.getLogger(__name__)
 
-LIBRARY_PATH = Path('data/all_tessituragrams.json')
+# Default is only for local development; set SECRET_KEY in production.
+_DEFAULT_SECRET = 'tessituragram-dev-key-change-in-production'
+
+app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY', _DEFAULT_SECRET)
+if app.secret_key == _DEFAULT_SECRET:
+    logger.warning(
+        'SECRET_KEY is unset: using a development default. '
+        'Set SECRET_KEY in the environment for any shared or public deployment.',
+    )
 
 _results_store: dict[str, list[dict]] = {}
 _charts_store: dict[str, list[dict]] = {}
 
 
-def _load_library() -> list[dict]:
-    return load_tessituragrams(LIBRARY_PATH)
+def get_library_path() -> Path:
+    """Path to the tessituragram library JSON. Override with TESSITURAGRAM_LIBRARY_PATH."""
+    return Path(os.environ.get('TESSITURAGRAM_LIBRARY_PATH', 'data/all_tessituragrams.json'))
 
 
-MIDI_LOW = 21
-MIDI_HIGH = 108
+def get_song_library() -> tuple[list[dict] | None, str | None]:
+    """Load library from disk. ``(songs, None)`` on success, or ``(None, user_message)`` on failure."""
+    return load_tessituragrams_with_status(get_library_path())
 
 
 def _session_singer_names(num_parts: int) -> list[str]:
@@ -61,68 +74,27 @@ def _session_singer_names(num_parts: int) -> list[str]:
     return out
 
 
-def _parse_profile_payload(data: object) -> tuple[dict | None, str | None]:
-    """Validate JSON body for save_profile_api. Returns (profile_dict, error_message)."""
-    if not isinstance(data, dict):
-        return None, 'Expected a JSON object'
-
-    try:
-        lo = int(data['min_midi'])
-        hi = int(data['max_midi'])
-    except (KeyError, TypeError, ValueError):
-        return None, 'min_midi and max_midi must be integers'
-
-    if not (MIDI_LOW <= lo <= hi <= MIDI_HIGH):
-        return None, f'Range must satisfy {MIDI_LOW} <= min_midi <= max_midi <= {MIDI_HIGH}'
-
-    raw_fav = data.get('favorite_midis', [])
-    raw_avoid = data.get('avoid_midis', [])
-    if not isinstance(raw_fav, list) or not isinstance(raw_avoid, list):
-        return None, 'favorite_midis and avoid_midis must be arrays'
-
-    fav: list[int] = []
-    avoid: list[int] = []
-    for label, arr, out_list in (
-        ('favorite_midis', raw_fav, fav),
-        ('avoid_midis', raw_avoid, avoid),
-    ):
-        for x in arr:
-            try:
-                m = int(x)
-            except (TypeError, ValueError):
-                return None, f'{label} must contain only integers'
-            if not (MIDI_LOW <= m <= MIDI_HIGH):
-                return None, f'{label} MIDI values must be between {MIDI_LOW} and {MIDI_HIGH}'
-            if not (lo <= m <= hi):
-                return None, f'{label} notes must lie within the vocal range'
-            out_list.append(m)
-
-    try:
-        alpha = float(data.get('alpha', 0.0))
-    except (TypeError, ValueError):
-        return None, 'alpha must be a number'
-    alpha = max(0.0, min(1.0, alpha))
-
-    return {
-        'min_midi': lo,
-        'max_midi': hi,
-        'favorite_midis': fav,
-        'avoid_midis': avoid,
-        'alpha': alpha,
-    }, None
-
-
 # ── Routes ───────────────────────────────────────────────────────────────────
 
 @app.route('/')
 def index():
-    songs = _load_library()
+    songs, err = get_song_library()
+    if err is not None or songs is None:
+        return (
+            render_template(
+                'library_unavailable.html',
+                error_message=err or 'The song library could not be loaded.',
+                library_path_display=str(get_library_path()),
+            ),
+            503,
+        )
+
     types = discover_ensemble_types(songs)
-    type_info = {}
+    type_info: dict = {}
     for num, label in sorted(types.items()):
         count = len(filter_by_ensemble_type(songs, num))
         type_info[num] = {'label': label, 'count': count}
-    return render_template('index.html', types=type_info)
+    return render_template('index.html', types=type_info, library_path_display=str(get_library_path()))
 
 
 @app.route('/select-ensemble', methods=['POST'])
@@ -205,7 +177,7 @@ def save_profile_api(index):
         return jsonify({'ok': False, 'error': 'Invalid profile index'}), 400
 
     data = request.get_json(silent=True)
-    profile, err = _parse_profile_payload(data)
+    profile, err = parse_profile_payload(data)
     if err:
         return jsonify({'ok': False, 'error': err}), 400
 
@@ -265,7 +237,18 @@ def find_recommendations():
     profiles_data = session.get('profiles', [])
     names_list = _session_singer_names(num_parts)
 
-    songs = _load_library()
+    songs, lib_err = get_song_library()
+    if lib_err is not None or songs is None:
+        return (
+            render_template(
+                'library_unavailable.html',
+                error_message=lib_err
+                or 'The song library could not be loaded for recommendations.',
+                library_path_display=str(get_library_path()),
+            ),
+            503,
+        )
+
     filtered = filter_by_ensemble_type(songs, num_parts)
 
     if num_parts == 1:
@@ -372,16 +355,17 @@ def results():
 
 
 if __name__ == '__main__':
-    import os
-
     # PORT / FLASK_HOST: override if 5000 is taken or you need LAN access (e.g. FLASK_HOST=0.0.0.0).
-    port = int(os.environ.get("PORT", "5000"))
-    host = os.environ.get("FLASK_HOST", "127.0.0.1")
+    port = int(os.environ.get('PORT', '5000'))
+    host = os.environ.get('FLASK_HOST', '127.0.0.1')
+    debug = os.environ.get('FLASK_DEBUG', '1').lower() in ('1', 'true', 'yes')
     # Debug reloader spawns a second process; on Windows + synced folders it often breaks binding.
-    open_url = "127.0.0.1" if host in ("0.0.0.0", "::") else host
-    print(f"\n  Tessituragram UI - open: http://{open_url}:{port}/\n", flush=True)
+    open_url = '127.0.0.1' if host in ('0.0.0.0', '::') else host
+    print(f'\n  Tessituragram UI - open: http://{open_url}:{port}/\n', flush=True)
+    if not debug:
+        logger.info('FLASK_DEBUG is off (production-style run).')
     app.run(
-        debug=True,
+        debug=debug,
         host=host,
         port=port,
         use_reloader=False,

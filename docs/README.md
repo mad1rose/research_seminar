@@ -22,7 +22,7 @@ docs/
 │   ├── README.md
 │   └── clarifying-questions.md
 ├── EPIC_PLAN.md              legacy pointer → use spec/plan.md
-└── (optional) DATA.md         add when T-D01 is done; dataset + provenance
+└── DATA.md                    dataset layout and provenance (teaching / thesis)
 ```
 
 ---

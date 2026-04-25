@@ -15,7 +15,7 @@
 ## Spec & docs hygiene
 
 - [ ] **T-S01** (Constitution) — Review [`spec/constitution.md`](spec/constitution.md) §6 **Open** table; fill *Exact public vs git visibility* when you decide.  
-- [ ] **T-S02** (traceability) — If you add [`DATA.md`](DATA.md), link it from root `README.md` and Epic E in [`spec/user-stories.md`](spec/user-stories.md).  
+- [x] **T-S02** (traceability) — If you add [`DATA.md`](DATA.md), link it from root `README.md` and Epic E in [`spec/user-stories.md`](spec/user-stories.md).  
 - [x] **T-S03** (D) — Cross-link root `README.md` “Web app” section to [`testing/manual-test.md`](testing/manual-test.md) for testers.
 
 ---
@@ -30,26 +30,26 @@
 
 ## Web / API hardening
 
-- [ ] **T-W01** (D3) — Confirm `POST /api/save-profile/0` with out-of-range MIDI returns **400** and JSON `{ok: false, error: ...}`.  
+- [x] **T-W01** (D3) — Confirm `POST /api/save-profile/0` with out-of-range MIDI returns **400** and JSON `{ok: false, error: ...}`. *Covered by `tests/test_app_routes.py`.*  
 - [ ] **T-W02** (D3) — Confirm failed save does **not** navigate to the next step (manual).  
-- [ ] **T-W03** (D1) — Document or implement friendly behavior when `data/all_tessituragrams.json` is missing on `GET /`.  
-- [ ] **T-W04** (Constitution §2) — `SECRET_KEY` from environment for non-local deploys; document in README.  
+- [x] **T-W03** (D1) — Document or implement friendly behavior when `data/all_tessituragrams.json` is missing on `GET /`. *503 + `library_unavailable.html`.*  
+- [x] **T-W04** (Constitution §2) — `SECRET_KEY` from environment for non-local deploys; document in README.  
 
 ---
 
 ## Data & thesis reproducibility
 
-- [ ] **T-D01** (E) — Add [`DATA.md`](DATA.md): what each file in `data/` is, provenance, approximate size, redistributability.  
-- [ ] **T-D02** (E) — If library JSON is not in git, document how to obtain or build it in **one** canonical place.  
+- [x] **T-D01** (E) — Add [`DATA.md`](DATA.md): what each file in `data/` is, provenance, approximate size, redistributability.  
+- [x] **T-D02** (E) — If library JSON is not in git, document how to obtain or build it in **one** canonical place. *Covered in `DATA.md` + `README` troubleshooting; adjust if you exclude large JSON from the repo.*  
 
 ---
 
 ## Automated tests (Epic G)
 
-- [ ] **T-A01** (G) — Add `pytest` + `tests/` layout; document in README.  
-- [ ] **T-A02** (G) — Unit tests: `_parse_profile_payload` valid + invalid (refactor to `src/` if needed for import hygiene).  
-- [ ] **T-A03** (D1) — Flask `test_client`: e.g. `GET /` with a minimal temp library (may need injectable `LIBRARY_PATH`).  
-- [ ] **T-A04** (G) — At least one test: invalid `POST /api/save-profile/0` → 400 + JSON `error` (satisfies `spec/user-stories` G).  
+- [x] **T-A01** (G) — Add `pytest` + `tests/` layout; document in README.  
+- [x] **T-A02** (G) — Unit tests: `parse_profile_payload` in `src/profile_validation.py` — see `tests/test_profile_validation.py`.  
+- [x] **T-A03** (D1) — Flask `test_client`: `GET /` with minimal temp library (see `tests/test_app_routes.py`).  
+- [x] **T-A04** (G) — At least one test: invalid `POST /api/save-profile/0` → 400 + JSON `error` (satisfies `spec/user-stories` G).  
 
 ---
 

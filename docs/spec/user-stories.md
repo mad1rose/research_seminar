@@ -162,7 +162,7 @@
 **Acceptance criteria**
 
 - [x] README states which JSON library the web app and CLI use.
-- [ ] (Optional) Version or hash of `all_tessituragrams.json` noted in thesis supplement or [`../DATA.md`](../DATA.md) when you add it.
+- [x] (Optional) Version or hash of `all_tessituragrams.json` noted in thesis supplement or [`../DATA.md`](../DATA.md) when you add it. *(**Note:** `docs/DATA.md` now explains provenance; add a concrete file hash in your thesis or in `DATA.md` when you freeze a run.)*
 
 **Plan:** [plan § E](plan.md#epic-e--data--reproducibility) · **Tasks:** T-D01–T-D02 in [`../tasks.md`](../tasks.md)
 
@@ -191,8 +191,8 @@
 
 **Acceptance criteria**
 
-- [ ] Tests run in CI or locally with one command (`pytest`) — **check when `tests/` and config exist** (see [`../tasks.md`](../tasks.md) T-A01+).
-- [ ] At least one test for invalid `/api/save-profile` payload returns 400 with JSON error.
+- [x] Tests run in CI or locally with one command (`pytest`) — **see [`../tasks.md`](../tasks.md) T-A01+**.
+- [x] At least one test for invalid `/api/save-profile` payload returns 400 with JSON error.
 
 **Plan:** [plan § G](plan.md#epic-g--automated-quality)
 
