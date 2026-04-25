@@ -9,6 +9,7 @@ This `docs/` tree is a **specification package**: laws first, then capabilities,
 ```text
 docs/
 ├── README.md                 ← you are here: index and workflow
+├── ARCHITECTURE.md           runtime: modules, scoring, web flow, Docker
 ├── spec/                     core product spec (read in order 1 → 2 → 3)
 │   ├── README.md
 │   ├── constitution.md        laws: you must / you must not

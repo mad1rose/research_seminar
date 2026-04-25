@@ -7,6 +7,8 @@
 **Environment:** project root, venv active, `pip install -r requirements.txt`  
 **Data:** `data/all_tessituragrams.json` present unless you intentionally test the missing-file path.
 
+**Docker (Epic F / task T-P04):** Repeat the **Web — happy path** against a container when you change Docker or deployment docs — e.g. `docker compose up --build` with `./data` mounted (see [README.md](../../README.md) § Run with Docker and [ARCHITECTURE.md](../ARCHITECTURE.md) § Containerization).
+
 Record date and outcome in a lab notebook or git tag for thesis evidence.
 
 ---

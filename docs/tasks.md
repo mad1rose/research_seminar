@@ -55,16 +55,16 @@
 
 ## Deployment (Epic F)
 
-- [ ] **T-P01** (F) — `Dockerfile` runs the web app from repo root; `docker build` verified locally.  
-- [ ] **T-P02** (F) — `.dockerignore` excluding `.venv`, `__pycache__`, `.git`, large artifacts.  
-- [ ] **T-P03** (F) — `docker-compose.yml`: port map, optional **volume** for `data/`; **README** documents `SECRET_KEY` + mount paths.  
-- [ ] **T-P04** (F) — After T-P01–P03, tick **[`spec/user-stories.md`](spec/user-stories.md) Epic F** acceptance rows and re-run [`testing/manual-test.md`](testing/manual-test.md) web path against the container.  
+- [x] **T-P01** (F) — `Dockerfile` runs the web app from repo root; `docker build` verified locally.  
+- [x] **T-P02** (F) — `.dockerignore` excluding `.venv`, `__pycache__`, `.git`, large artifacts.  
+- [x] **T-P03** (F) — `docker-compose.yml`: port map, optional **volume** for `data/`; **README** documents `SECRET_KEY` + mount paths.  
+- [x] **T-P04** (F) — After T-P01–P03, tick **[`spec/user-stories.md`](spec/user-stories.md) Epic F** acceptance rows and re-run [`testing/manual-test.md`](testing/manual-test.md) web path against the container.  
 
 ---
 
 ## Nice-to-have (do not block thesis)
 
-- [ ] **T-N01** — `gunicorn` (or Windows-suitable server) in Docker image.  
+- [x] **T-N01** — `gunicorn` (or Windows-suitable server) in Docker image. *(Docker `prod` stage + `web-prod` Compose service.)*  
 - [ ] **T-N02** — GitHub Actions: run `pytest` on push.  
 
 ---

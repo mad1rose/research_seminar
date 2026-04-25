@@ -44,7 +44,7 @@ python -m pip install -r requirements.txt
 python -m pytest
 ```
 
-**Python version:** 3.13.x is the project standard; use the same in your write-up. Check with `python --version`.
+**Python version:** 3.13.x is the project standard; use the same in your write-up. Check with `python --version`. The pinned NumPy/SciPy/Matplotlib versions in [`requirements.txt`](requirements.txt) use **cp313 wheels** (needed for Linux/Docker `slim` images without a compiler).
 
 Optional environment variables:
 
@@ -53,6 +53,54 @@ Optional environment variables:
 - `FLASK_DEBUG` — if `0`, `false`, or `no`, runs without Flask debug mode (handy to approximate production; default is debug **on** for local work)
 - `SECRET_KEY` — set to a long random string for any shared, classroom, or public network; if unset, a **development** default is used and a warning is logged
 - `TESSITURAGRAM_LIBRARY_PATH` — optional path to `all_tessituragrams.json` if the file is not in `data/all_tessituragrams.json` (must still be a valid project-relative or absolute path the process can read)
+
+### Run with Docker
+
+Prerequisites: [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine) running.
+
+The image sets `FLASK_HOST=0.0.0.0` so the app is reachable from your host. **`data/` is not baked into the image** (see [`.dockerignore`](.dockerignore)); mount your local `data` directory so `data/all_tessituragrams.json` exists inside the container.
+
+**PowerShell** (from the project root):
+
+```powershell
+docker build -t tessituragram-app .
+docker run --rm -p 5000:5000 `
+  -e SECRET_KEY=change-me-to-a-long-random-string `
+  -v "${PWD}/data:/app/data" `
+  tessituragram-app
+```
+
+**Bash** (Git Bash, WSL, macOS, Linux):
+
+```bash
+docker build -t tessituragram-app .
+docker run --rm -p 5000:5000 \
+  -e SECRET_KEY=change-me-to-a-long-random-string \
+  -v "${PWD}/data:/app/data" \
+  tessituragram-app
+```
+
+Open **[http://127.0.0.1:5000/](http://127.0.0.1:5000/)**. If the library file is missing, you get a **503** with the “library unavailable” page (same as native runs).
+
+Environment template: copy [`.env.example`](.env.example) to `.env` and adjust (never commit real secrets). For **Compose** (dev) and **production-style** (`prod` target + Gunicorn), see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) § Containerization and [docs/spec/plan.md](docs/spec/plan.md) § Epic F.
+
+**Docker Compose (dev server)** — from the project root, with `./data` present (optional: copy [`.env.example`](.env.example) to `.env` and set `SECRET_KEY`):
+
+```powershell
+docker compose up --build
+```
+
+**Production-style stack (Gunicorn)** — separate Compose service on profile `prod` (same default host port `5000`; do not run `web` and `web-prod` at once on the same port):
+
+```powershell
+docker compose --profile prod up --build
+```
+
+**Build only the Gunicorn image:**
+
+```powershell
+docker build --target prod -t tessituragram-app:prod .
+```
 
 ### Web app layout
 
@@ -73,9 +121,14 @@ Optional environment variables:
 | [`data/`](data/) | Tessituragram JSON libraries (e.g. `all_tessituragrams.json`, `tessituragrams.json`) and generated outputs |
 | [`songs/`](songs/) | Put input `.mxl` files under `songs/mxl_songs/` for the CLI pipeline |
 | [`how_tos/`](how_tos/) | Step-by-step text guides |
-| [`docs/`](docs/) | Spec: [`docs/README.md`](docs/README.md), [`docs/spec/constitution.md`](docs/spec/constitution.md), data notes [`docs/DATA.md`](docs/DATA.md) |
+| [`docs/`](docs/) | Spec: [`docs/README.md`](docs/README.md), [`docs/spec/constitution.md`](docs/spec/constitution.md), data notes [`docs/DATA.md`](docs/DATA.md), system guide [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
 | [`tests/`](tests/) | `pytest` suite (`python -m pytest`) |
 | [`requirements.txt`](requirements.txt) | Python dependencies (includes Flask for the web app) |
+| [`requirements-prod.txt`](requirements-prod.txt) | Runtime-only deps + Gunicorn (Docker `prod` stage) |
+| [`Dockerfile`](Dockerfile) | Multi-stage image (`dev` default, `prod` with `--target prod`) |
+| [`.dockerignore`](.dockerignore) | Build context exclusions (`data/` not in image) |
+| [`docker-compose.yml`](docker-compose.yml) | `web` (dev) and `web-prod` (profile `prod`) |
+| [`.env.example`](.env.example) | Template for secrets / env vars (Compose, deployments) |
 
 ---
 

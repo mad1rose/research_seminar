@@ -110,9 +110,26 @@ GET  /results             → paginate from in-memory store by session/result id
 
 | Item | Detail |
 |------|--------|
-| **Status** | Add `Dockerfile`, `.dockerignore`, and `docker-compose.yml` per [tasks](../tasks.md) (T-P01–T-P03) until acceptance criteria are met. |
+| **Status** | `Dockerfile` (multi-stage: default **`dev`**, `docker build --target prod` for Gunicorn), `.dockerignore`, `docker-compose.yml` (`web` + `web-prod` on profile `prod`), `.env.example`, [../ARCHITECTURE.md](../ARCHITECTURE.md). |
 | **Target** | Docker on laptop (Windows first-class for now); document `SECRET_KEY` and `data/` volume. |
 | **Risks** | Host port binding; **mount** `data/all_tessituragrams.json` (or `data/`) into the container at the path `app.py` expects |
+
+**Commands (from repo root)**
+
+```powershell
+# Dev image (default final stage = Flask `python app.py`)
+docker build -t tessituragram-app .
+docker run --rm -p 5000:5000 -e SECRET_KEY=change-me -v "${PWD}/data:/app/data" tessituragram-app
+
+# Compose: dev
+docker compose up --build
+
+# Compose: Gunicorn (profile prod)
+docker compose --profile prod up --build
+
+# Prod image only
+docker build --target prod -t tessituragram-app:prod .
+```
 
 ---
 
@@ -127,4 +144,4 @@ GET  /results             → paginate from in-memory store by session/result id
 
 ---
 
-*When Docker or CI lands, add exact commands to § F and a one-liner in [`../README.md`](../README.md).*
+*Docker commands are in § Epic F above and in [`../README.md`](../README.md) (Run with Docker).*

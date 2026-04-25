@@ -1,0 +1,60 @@
+# Local dev: default service uses Dockerfile target `dev` (Flask built-in server).
+# Production-style: `docker compose --profile prod up --build` (Gunicorn).
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    image: tessituragram-app:dev
+    ports:
+      - "${PORT:-5000}:5000"
+    environment:
+      # Compose loads `.env` in this directory for substitution (optional).
+      SECRET_KEY: ${SECRET_KEY:-dev-only-change-me}
+      FLASK_HOST: "0.0.0.0"
+      FLASK_DEBUG: ${FLASK_DEBUG:-0}
+      TESSITURAGRAM_LIBRARY_PATH: ${TESSITURAGRAM_LIBRARY_PATH:-}
+    volumes:
+      - ./data:/app/data:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/', timeout=5).read()",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 25s
+
+  web-prod:
+    profiles: ["prod"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: prod
+    image: tessituragram-app:prod
+    ports:
+      - "${PORT:-5000}:5000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-dev-only-change-me}
+      FLASK_DEBUG: ${FLASK_DEBUG:-0}
+      TESSITURAGRAM_LIBRARY_PATH: ${TESSITURAGRAM_LIBRARY_PATH:-}
+    volumes:
+      - ./data:/app/data:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/', timeout=5).read()",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 25s

@@ -176,8 +176,8 @@
 
 **Acceptance criteria**
 
-- [ ] One command builds and runs (e.g. `docker compose up`) from README — **check only when `Dockerfile` / compose exist and are verified** (see [plan § F](plan.md#epic-f--deployment--docker--hosting), [`../tasks.md`](../tasks.md) T-P01–P03).
-- [ ] `SECRET_KEY` and data mounting behavior documented for non-dev use.
+- [x] One command builds and runs (e.g. `docker compose up`) from README — **check only when `Dockerfile` / compose exist and are verified** (see [plan § F](plan.md#epic-f--deployment--docker--hosting), [`../tasks.md`](../tasks.md) T-P01–P03).
+- [x] `SECRET_KEY` and data mounting behavior documented for non-dev use.
 
 **Plan:** [plan § F](plan.md#epic-f--deployment--docker--hosting)
 
