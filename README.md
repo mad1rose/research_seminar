@@ -11,9 +11,11 @@ A tessituragram is a duration-weighted pitch distribution for a song (or a voice
 ## Repository layout
 
 - `src/` - core parsing, tessituragram generation, recommendation, and notebook export code.
+- `previous_experiment/previous_experiment_scripts/` - scripts used for the initial paper draft experiments (101-song setup).
+- `previous_experiment/previous_experiment_results/` - JSON outputs from the initial paper draft experiments.
 - `experiment/` - RQ1/RQ2/RQ3 experiment runners and plotting scripts.
+- `experiment_results/` - JSON outputs from the later large-library experiments.
 - `data/` - tessituragram libraries and recommendation output JSON files.
-- `experiment_results/` - generated experiment output JSON files.
 - `songs/` - input folder for `.mxl` files (used by `src.main`).
 - `how_tos/` - step-by-step usage guides.
 
@@ -61,6 +63,18 @@ These generate `tessituragrams.ipynb` and `recommendations.ipynb` in the reposit
 
 ## Experiments
 
+This repository contains **two experiment phases**:
+
+1. **Initial paper-draft experiments (101 songs)**  
+   - Dataset source for that phase: `songs/mxl_songs` (101-song set).  
+   - Scripts used: `previous_experiment/previous_experiment_scripts/`.  
+   - Results produced: `previous_experiment/previous_experiment_results/`.
+
+2. **Later large-library experiments**  
+   - Dataset source for that phase: `data/all_tessituragrams.json` (larger library).  
+   - Scripts used: `experiment/`.  
+   - Results produced: `experiment_results/`.
+
 The `experiment/` scripts reproduce evaluation workflows and figures for RQ1, RQ2, RQ3, baselines, and alpha sensitivity.
 
 Common examples:
@@ -74,7 +88,7 @@ python -m experiment.visualize_rq2
 python -m experiment.visualize_rq3
 ```
 
-Generated JSON outputs are stored in `experiment_results/`.
+Generated JSON outputs for this (later) phase are stored in `experiment_results/`.
 
 ## Main modules in `src/`
 
