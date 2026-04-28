@@ -2,7 +2,6 @@
 {% block title %}Recommendations{% endblock %}
 
 {% block head %}
-<link href="https://fonts.googleapis.com/css2?family=Noto+Music&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 {% endblock %}
 
@@ -64,26 +63,9 @@
         <div class="viz-root"
              data-normed='{{ r.normalized_vector | tojson }}'
              data-ideal='{{ prof.get("ideal_vector", {}) | tojson }}'
-             data-profile='{{ {"min_midi": prof.get("min_midi"), "max_midi": prof.get("max_midi"), "favorite_midis": prof.get("favorite_midis", []), "avoid_midis": prof.get("avoid_midis", [])} | tojson }}'
              data-chart-title="{{ prof.get('name', 'You') }} — score {{ '%.2f'|format(r.final_score) }}">
-          <div class="viz-tabs" role="tablist" aria-label="How to view pitch use">
-            <button type="button" class="viz-tab active" data-viz="bars" role="tab" aria-selected="true">Bar chart</button>
-            <button type="button" class="viz-tab" data-viz="keyboard" role="tab" aria-selected="false">Keyboard</button>
-            <button type="button" class="viz-tab" data-viz="staff" role="tab" aria-selected="false">Staff</button>
-          </div>
-          <p class="viz-caption viz-caption-bars"><strong>Bar chart:</strong> bars = this song’s share of singing time on each pitch; line = your ideal profile (same notes).</p>
-          <p class="viz-caption viz-caption-keyboard hidden"><strong>Keyboard heatmap:</strong> full 88-key piano for this song; color = share of singing time on each pitch. Your range, favorites, and avoids match the profile editor; keys outside your range are faded.</p>
-          <p class="viz-caption viz-caption-staff hidden"><strong>Staff heatmap:</strong> grand staff matches the profile editor. Bordered bars = share of singing time per pitch (darker &amp; more saturated = more time; hover a bar for the exact %). Middle C keeps its short ledger; extra ledgers only outside the two staves.</p>
-          <div class="viz-pane viz-pane-bars">
-            <div class="plotly-chart" style="width:100%;height:380px;"></div>
-          </div>
-          <div class="viz-pane viz-pane-keyboard hidden">
-            <div class="heat-keyboard-scroll"><div class="heat-keyboard"></div></div>
-            <div class="heat-legend" aria-hidden="true"></div>
-          </div>
-          <div class="viz-pane viz-pane-staff hidden">
-            <div class="heat-staff-wrap"></div>
-          </div>
+          <p class="tessi-caption"><strong>Tessituragram:</strong> each bar is this song’s share of singing time on that pitch; the line is your ideal profile on the same notes.</p>
+          <div class="plotly-chart" style="width:100%;height:380px;"></div>
         </div>
       </div>
     </div>
@@ -120,26 +102,9 @@
         <div class="viz-root"
              data-normed='{{ a.normalized_vector | tojson }}'
              data-ideal='{{ prof.get("ideal_vector", {}) | tojson }}'
-             data-profile='{{ {"min_midi": prof.get("min_midi"), "max_midi": prof.get("max_midi"), "favorite_midis": prof.get("favorite_midis", []), "avoid_midis": prof.get("avoid_midis", [])} | tojson }}'
              data-chart-title="{{ names[pi] if pi < names|length else 'Profile ' ~ (pi+1) }} → {{ a.part_name or a.part_id }} ({{ '%.2f'|format(a.final_score) }})">
-          <div class="viz-tabs" role="tablist" aria-label="How to view pitch use">
-            <button type="button" class="viz-tab active" data-viz="bars" role="tab" aria-selected="true">Bar chart</button>
-            <button type="button" class="viz-tab" data-viz="keyboard" role="tab" aria-selected="false">Keyboard</button>
-            <button type="button" class="viz-tab" data-viz="staff" role="tab" aria-selected="false">Staff</button>
-          </div>
-          <p class="viz-caption viz-caption-bars"><strong>Bar chart:</strong> bars = this song’s share of singing time on each pitch; line = ideal profile for this singer.</p>
-          <p class="viz-caption viz-caption-keyboard hidden"><strong>Keyboard heatmap:</strong> full piano for this part; color = share of time on each pitch. Range, favorites, and avoids match the profile editor.</p>
-          <p class="viz-caption viz-caption-staff hidden"><strong>Staff heatmap:</strong> same grand-staff layout as the profile editor; hover bars for exact pitch and percentage.</p>
-          <div class="viz-pane viz-pane-bars">
-            <div class="plotly-chart" style="width:100%;height:380px;"></div>
-          </div>
-          <div class="viz-pane viz-pane-keyboard hidden">
-            <div class="heat-keyboard-scroll"><div class="heat-keyboard"></div></div>
-            <div class="heat-legend" aria-hidden="true"></div>
-          </div>
-          <div class="viz-pane viz-pane-staff hidden">
-            <div class="heat-staff-wrap"></div>
-          </div>
+          <p class="tessi-caption"><strong>Tessituragram:</strong> each bar is this song’s share of singing time on that pitch for this part; the line is this singer’s ideal profile on the same notes.</p>
+          <div class="plotly-chart" style="width:100%;height:380px;"></div>
         </div>
       </div>
       {% endfor %}
