@@ -17,6 +17,14 @@ function midiToNoteName(midi) {
   return NOTE_NAMES[midi % 12] + octave;
 }
 
+/** Uses staff accidental mode when staff.js exposes spellMidiForStaffDisplay. */
+function displayNoteName(midi) {
+  if (typeof window.spellMidiForStaffDisplay === 'function') {
+    return window.spellMidiForStaffDisplay(midi);
+  }
+  return midiToNoteName(midi);
+}
+
 function isWhite(midi) { return WHITE_PCS.has(midi % 12); }
 
 /* ── State ──────────────────────────────────────────────────────────────── */
@@ -53,11 +61,11 @@ function buildPiano() {
     const el = document.createElement('div');
     el.className = 'piano-key';
     el.dataset.midi = m;
-    el.dataset.note = midiToNoteName(m);
+    el.dataset.note = displayNoteName(m);
 
     const lbl = document.createElement('span');
     lbl.className = 'key-label';
-    lbl.textContent = midiToNoteName(m);
+    lbl.textContent = displayNoteName(m);
     lbl.style.pointerEvents = 'none';
 
     if (isWhite(m)) {
@@ -78,24 +86,33 @@ function buildPiano() {
       el.appendChild(lbl);
     }
 
-    el.title = midiToNoteName(m) + ' (MIDI ' + m + ')';
+    el.title = displayNoteName(m) + ' (MIDI ' + m + ')';
     el.addEventListener('click', () => onKeyClick(m));
     container.appendChild(el);
     pianoState.keys[m] = el;
   }
 
-  scrollToMiddleC();
+  scrollPianoToRangeCenter();
   loadExisting();
 }
 
-function scrollToMiddleC() {
+/** Horizontally center the keyboard on the current range midpoint (or middle C). */
+function scrollPianoToRangeCenter() {
   const scroll = document.getElementById('piano-scroll');
   if (!scroll) return;
-  const c4 = pianoState.keys[60];
-  if (c4) {
-    const offset = c4.offsetLeft - scroll.clientWidth / 2 + KEY_W / 2;
-    scroll.scrollLeft = Math.max(0, offset);
+  const s = pianoState;
+  let centerM = 60;
+  if (s.rangeStart != null && s.rangeEnd != null) {
+    centerM = Math.round((s.rangeStart + s.rangeEnd) / 2);
+  } else if (s.rangeStart != null) {
+    centerM = s.rangeStart;
   }
+  centerM = Math.max(MIDI_LOW, Math.min(MIDI_HIGH, centerM));
+  const keyEl = pianoState.keys[centerM];
+  if (!keyEl) return;
+  const w = keyEl.offsetWidth || KEY_W;
+  const offset = keyEl.offsetLeft - scroll.clientWidth / 2 + w / 2;
+  scroll.scrollLeft = Math.max(0, offset);
 }
 
 /* ── Key click handler ──────────────────────────────────────────────────── */
@@ -158,9 +175,12 @@ function handleRangeClick(midi) {
     }
   }
 
-  refreshKeyStyles();
+  refreshViews();
   updateReadouts();
   if (typeof updateNextButton === 'function') updateNextButton();
+  if (s.rangeStart != null && s.rangeEnd != null) {
+    requestAnimationFrame(() => scrollPianoToRangeCenter());
+  }
 }
 
 function handleMarkClick(midi, which) {
@@ -178,11 +198,46 @@ function handleMarkClick(midi, which) {
     set.add(midi);
   }
 
-  refreshKeyStyles();
+  refreshViews();
+  updateReadouts();
+}
+
+/** Add a favorite/avoid without toggling off; used by staff drag-paint. */
+function ensureMarkOnly(midi, which) {
+  const s = pianoState;
+  if (s.rangeStart === null || s.rangeEnd === null) return;
+  const lo = Math.min(s.rangeStart, s.rangeEnd);
+  const hi = Math.max(s.rangeStart, s.rangeEnd);
+  if (midi < lo || midi > hi) return;
+
+  const set = s[which];
+  const other = which === 'favorites' ? 'avoids' : 'favorites';
+  if (set.has(midi)) return;
+
+  s[other].delete(midi);
+  set.add(midi);
+  refreshViews();
   updateReadouts();
 }
 
 /* ── Styling ────────────────────────────────────────────────────────────── */
+function refreshPianoKeyLabels() {
+  for (let m = MIDI_LOW; m <= MIDI_HIGH; m++) {
+    const el = pianoState.keys[m];
+    if (!el) continue;
+    const lbl = el.querySelector('.key-label');
+    if (lbl) lbl.textContent = displayNoteName(m);
+    el.title = displayNoteName(m) + ' (MIDI ' + m + ')';
+    el.dataset.note = displayNoteName(m);
+  }
+}
+window.refreshPianoKeyLabels = refreshPianoKeyLabels;
+
+function refreshViews() {
+  refreshKeyStyles();
+  if (typeof refreshStaffNotes === 'function') refreshStaffNotes();
+}
+
 function refreshKeyStyles() {
   const s = pianoState;
   const hasRange = s.rangeStart !== null && s.rangeEnd !== null;
@@ -218,24 +273,25 @@ function updateReadouts() {
   const rangeEl = document.querySelector('#range-readout .note-list');
   if (rangeEl) {
     if (s.rangeStart !== null && s.rangeEnd !== null) {
-      rangeEl.textContent = midiToNoteName(s.rangeStart) + ' – ' + midiToNoteName(s.rangeEnd);
+      rangeEl.textContent =
+        displayNoteName(s.rangeStart) + ' – ' + displayNoteName(s.rangeEnd);
     } else if (s.rangeStart !== null) {
-      rangeEl.textContent = midiToNoteName(s.rangeStart) + ' – (click high note)';
+      rangeEl.textContent = displayNoteName(s.rangeStart) + ' – (click high note)';
     } else {
-      rangeEl.textContent = 'Click two keys to set your range';
+      rangeEl.textContent = 'Click two notes to set your range';
     }
   }
 
   const favEl = document.querySelector('#favorites-readout .note-list');
   if (favEl) {
     const arr = Array.from(s.favorites).sort((a, b) => a - b);
-    favEl.textContent = arr.length ? arr.map(midiToNoteName).join(', ') : 'None';
+    favEl.textContent = arr.length ? arr.map(displayNoteName).join(', ') : 'None';
   }
 
   const avoidEl = document.querySelector('#avoids-readout .note-list');
   if (avoidEl) {
     const arr = Array.from(s.avoids).sort((a, b) => a - b);
-    avoidEl.textContent = arr.length ? arr.map(midiToNoteName).join(', ') : 'None';
+    avoidEl.textContent = arr.length ? arr.map(displayNoteName).join(', ') : 'None';
   }
 }
 
@@ -256,9 +312,10 @@ function resetRange() {
   pianoState.avoids.clear();
   pianoState.mode = 'range';
   setMode('range');
-  refreshKeyStyles();
+  refreshViews();
   updateReadouts();
   if (typeof updateNextButton === 'function') updateNextButton();
+  requestAnimationFrame(() => scrollPianoToRangeCenter());
 }
 
 /* ── Load existing profile data ─────────────────────────────────────────── */
@@ -273,16 +330,11 @@ function loadExisting() {
   if (e.favorite_midis) e.favorite_midis.forEach(m => pianoState.favorites.add(m));
   if (e.avoid_midis) e.avoid_midis.forEach(m => pianoState.avoids.add(m));
 
-  refreshKeyStyles();
+  refreshViews();
   updateReadouts();
   if (typeof updateNextButton === 'function') updateNextButton();
 
-  const scroll = document.getElementById('piano-scroll');
-  const lowKey = pianoState.keys[e.min_midi];
-  if (scroll && lowKey) {
-    const offset = lowKey.offsetLeft - 60;
-    scroll.scrollLeft = Math.max(0, offset);
-  }
+  requestAnimationFrame(() => scrollPianoToRangeCenter());
 }
 
 /* ── Init ───────────────────────────────────────────────────────────────── */

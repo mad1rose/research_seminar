@@ -1,43 +1,72 @@
 {% extends "base.html" %}
 {% block title %}{{ name }}'s Profile{% endblock %}
 
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Noto+Music&display=swap" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
 {% if num_parts > 1 %}
 <p class="step-indicator">Profile {{ index + 1 }} of {{ num_parts }}</p>
 {% endif %}
 <h1 class="page-title">{{ name }}'s Profile</h1>
-<p class="page-subtitle">Click the piano to set your range, then mark favorite and avoid notes.</p>
+<p class="page-subtitle">Choose piano or staff. Set your range, then mark favorite and avoid notes.</p>
 
-<!-- Piano keyboard -->
-<div class="piano-section">
-  <div class="piano-scroll" id="piano-scroll">
-    <div class="piano" id="piano"></div>
+<div class="profile-layout">
+  <div class="input-column">
+    <div class="input-tabs" role="tablist" aria-label="Note input method">
+      <button type="button" class="input-tab active" id="tab-piano" data-view="piano" role="tab" aria-selected="true" aria-controls="input-piano">Piano</button>
+      <button type="button" class="input-tab" id="tab-staff" data-view="staff" role="tab" aria-selected="false" aria-controls="input-staff">Staff</button>
+    </div>
+
+    <div id="input-piano" class="input-panel" role="tabpanel" aria-labelledby="tab-piano">
+      <div class="piano-section">
+        <div class="piano-scroll" id="piano-scroll">
+          <div class="piano" id="piano"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="input-staff" class="input-panel" hidden role="tabpanel" aria-labelledby="tab-staff">
+      <div class="staff-section">
+        <p class="staff-hint">Choose ♮ ♯ or ♭: <strong>♯</strong> only selects and labels sharp spellings (e.g. D#); <strong>♭</strong> only flat spellings (e.g. Eb). <strong>Range:</strong> click two notes. <strong>Favorites / Avoids:</strong> click or drag to paint; short ledgers above/below the staves; middle C has a short line between the staves.</p>
+        <div class="accidental-palette" role="group" aria-label="Accidental">
+          <button type="button" class="acc-btn active" data-acc="natural" title="Natural">&#9838;</button>
+          <button type="button" class="acc-btn" data-acc="sharp" title="Sharp">&#9839;</button>
+          <button type="button" class="acc-btn" data-acc="flat" title="Flat">&#9837;</button>
+        </div>
+        <div class="staff-scroll" id="staff-scroll">
+          <svg id="staff-svg" xmlns="http://www.w3.org/2000/svg" aria-label="Grand staff"></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="piano-controls">
+      <button class="mode-btn mode-range active" id="mode-range" onclick="setMode('range')">
+        &#127929; Set Range
+      </button>
+      <button class="mode-btn mode-favorites" id="mode-favorites" onclick="setMode('favorites')">
+        &#9733; Mark Favorites
+      </button>
+      <button class="mode-btn mode-avoids" id="mode-avoids" onclick="setMode('avoids')">
+        &#10007; Mark Avoids
+      </button>
+      <button class="btn btn-ghost" onclick="resetRange()" style="font-size:.85rem;">Reset</button>
+    </div>
   </div>
 
-  <div class="piano-controls">
-    <button class="mode-btn mode-range active" id="mode-range" onclick="setMode('range')">
-      &#127929; Set Range
-    </button>
-    <button class="mode-btn mode-favorites" id="mode-favorites" onclick="setMode('favorites')">
-      &#9733; Mark Favorites
-    </button>
-    <button class="mode-btn mode-avoids" id="mode-avoids" onclick="setMode('avoids')">
-      &#10007; Mark Avoids
-    </button>
-    <button class="btn btn-ghost" onclick="resetRange()" style="font-size:.85rem;">Reset</button>
-  </div>
-
-  <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:.75rem;">
+  <aside class="readout-sidebar" aria-label="Note selections summary">
+    <h3 class="readout-sidebar-title">Selections</h3>
     <div class="piano-readout" id="range-readout">
-      <strong>Range:</strong> <span class="note-list">Click two keys to set your range</span>
+      <strong>Range:</strong> <span class="note-list">Click two notes to set your range</span>
     </div>
     <div class="piano-readout" id="favorites-readout">
-      <strong>Favorites:</strong> <span class="note-list">None</span>
+      <strong>Favorite Note(s):</strong> <span class="note-list">None</span>
     </div>
     <div class="piano-readout" id="avoids-readout">
-      <strong>Avoid:</strong> <span class="note-list">None</span>
+      <strong>Avoid Note(s):</strong> <span class="note-list">None</span>
     </div>
-  </div>
+  </aside>
 </div>
 
 <!-- Alpha slider -->
@@ -79,5 +108,6 @@
 })();
 </script>
 <script src="{{ url_for('static', filename='js/piano.js') }}"></script>
+<script src="{{ url_for('static', filename='js/staff.js') }}"></script>
 <script src="{{ url_for('static', filename='js/profile-page.js') }}"></script>
 {% endblock %}

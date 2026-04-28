@@ -290,6 +290,8 @@ def find_recommendations():
             'name': names_list[0] if names_list else 'You',
             'min_midi': p['min_midi'],
             'max_midi': p['max_midi'],
+            'favorite_midis': list(p.get('favorite_midis', [])),
+            'avoid_midis': list(p.get('avoid_midis', [])),
             'ideal_vector': {
                 str(p['min_midi'] + j): round(float(v), 6)
                 for j, v in enumerate(ideal_vec)
@@ -317,6 +319,8 @@ def find_recommendations():
                 'name': name,
                 'min_midi': p['min_midi'],
                 'max_midi': p['max_midi'],
+                'favorite_midis': list(p.get('favorite_midis', [])),
+                'avoid_midis': list(p.get('avoid_midis', [])),
                 'ideal_vector': {
                     str(p['min_midi'] + j): round(float(v), 6)
                     for j, v in enumerate(ideal_vec)

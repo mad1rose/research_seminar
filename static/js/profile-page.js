@@ -102,8 +102,43 @@
     window.updateNextButton = updateNextButton;
   }
 
+  function initInputTabs() {
+    const tabPiano = document.getElementById('tab-piano');
+    const tabStaff = document.getElementById('tab-staff');
+    const panelPiano = document.getElementById('input-piano');
+    const panelStaff = document.getElementById('input-staff');
+    if (!tabPiano || !tabStaff || !panelPiano || !panelStaff) return;
+
+    function selectPiano() {
+      tabPiano.classList.add('active');
+      tabStaff.classList.remove('active');
+      tabPiano.setAttribute('aria-selected', 'true');
+      tabStaff.setAttribute('aria-selected', 'false');
+      panelPiano.hidden = false;
+      panelStaff.hidden = true;
+      requestAnimationFrame(() => {
+        if (typeof scrollPianoToRangeCenter === 'function') scrollPianoToRangeCenter();
+      });
+    }
+
+    function selectStaff() {
+      tabStaff.classList.add('active');
+      tabPiano.classList.remove('active');
+      tabStaff.setAttribute('aria-selected', 'true');
+      tabPiano.setAttribute('aria-selected', 'false');
+      panelStaff.hidden = false;
+      panelPiano.hidden = true;
+      if (typeof buildStaff === 'function') buildStaff();
+      if (typeof refreshStaffNotes === 'function') refreshStaffNotes();
+    }
+
+    tabPiano.addEventListener('click', selectPiano);
+    tabStaff.addEventListener('click', selectStaff);
+  }
+
   /* Run synchronously after piano.js so window.updateNextButton exists before
      piano.js's DOMContentLoaded handler (buildPiano / loadExisting) runs. */
   init();
+  initInputTabs();
 })();
 
